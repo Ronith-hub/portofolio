@@ -70,6 +70,25 @@
       font-weight: 600;
     }
 
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    /* Skill tags glow with neon colours for the new Skills section */
+    .skill-tag {
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(167, 139, 250, 0.5);
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+      color: #f8fafc;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
     .hint {
       position: fixed;
       bottom: 16px;
@@ -103,6 +122,19 @@
     </div>
   </section>
 
+  <section id="skills">
+    <div class="card">
+      <h2>Skills</h2>
+      <div class="skills-list">
+        <span class="skill-tag">C</span>
+        <span class="skill-tag">HTML</span>
+        <span class="skill-tag">CSS</span>
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">Three.js</span>
+      </div>
+    </div>
+  </section>
+
   <div class="hint">Move the mouse · Scroll down</div>
 
   <script type="importmap">
@@ -129,13 +161,18 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Main object: a shiny torus knot
-    const knot = new THREE.Mesh(
-      new THREE.TorusKnotGeometry(8, 2.5, 160, 24),
-      new THREE.MeshStandardMaterial({ color: 0x7c3aed, metalness: 0.5, roughness: 0.25 })
+    // Change 1: swap the torus knot for a glowing wireframe sphere that gently pulses.
+    const mainSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(8, 32, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0xa78bfa,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.9
+      })
     );
-    knot.position.x = 12;
-    scene.add(knot);
+    mainSphere.position.x = 12;
+    scene.add(mainSphere);
 
     // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.4);
@@ -161,7 +198,7 @@
 
     // Floating cubes made with a loop
     const cubes = [];
-    const cubeColors = [0x22d3ee, 0xf472b6, 0xfacc15, 0x34d399];
+    const cubeColors = [0x22d3ee, 0xf472b6, 0xfacc15, 0x34d399, 0xa78bfa, 0xf87171];
     for (let i = 0; i < 12; i++) {
       const cube = new THREE.Mesh(
         new THREE.BoxGeometry(1.5, 1.5, 1.5),
@@ -175,6 +212,15 @@
       scene.add(cube);
       cubes.push(cube);
     }
+
+    // Change 2: clicking anywhere cycles the cubes to a new colour palette.
+    let activeCubeColor = 0;
+    document.addEventListener("click", () => {
+      activeCubeColor = (activeCubeColor + 1) % cubeColors.length;
+      cubes.forEach((cube) => {
+        cube.material.color.setHex(cubeColors[activeCubeColor]);
+      });
+    });
 
     // Mouse movement tilts the knot
     const mouse = { x: 0, y: 0 };
@@ -194,8 +240,10 @@
     function animate() {
       const time = clock.getElapsedTime();
 
-      knot.rotation.x = time * 0.3 + mouse.y * 0.5;
-      knot.rotation.y = time * 0.4 + mouse.x * 0.5;
+      const pulseScale = 1 + Math.sin(time * 1.8) * 0.18;
+      mainSphere.scale.setScalar(pulseScale);
+      mainSphere.rotation.x = time * 0.3 + mouse.y * 0.5;
+      mainSphere.rotation.y = time * 0.4 + mouse.x * 0.5;
 
       cubes.forEach((cube, i) => {
         cube.rotation.x += 0.01;
