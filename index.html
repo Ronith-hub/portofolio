@@ -11,7 +11,7 @@
       margin: 0;
       font-family: "Segoe UI", Arial, sans-serif;
       color: #f8fafc;
-      background: #050816;
+      background: #12040f;
     }
 
     /* The 3D canvas stays fixed behind all content */
@@ -39,7 +39,7 @@
       margin: 0 0 10px;
     }
 
-    h1 span { color: #a78bfa; }
+    h1 span { color: #f472b6; }
 
     h2 { font-size: clamp(1.8rem, 4vw, 3rem); margin: 0 0 10px; }
 
@@ -51,9 +51,9 @@
     }
 
     .card {
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(20, 8, 15, 0.6);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(167, 139, 250, 0.3);
+      border: 1px solid rgba(244, 114, 182, 0.35);
       border-radius: 16px;
       padding: 24px 28px;
       max-width: 520px;
@@ -64,7 +64,7 @@
       margin-top: 16px;
       padding: 12px 26px;
       border-radius: 999px;
-      background: #7c3aed;
+      background: #ec4899;
       color: white;
       text-decoration: none;
       font-weight: 600;
@@ -77,13 +77,12 @@
       margin-top: 18px;
     }
 
-    /* Skill tags glow with neon colours for the new Skills section */
     .skill-tag {
       padding: 10px 16px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(167, 139, 250, 0.5);
-      box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+      background: rgba(18, 4, 15, 0.8);
+      border: 1px solid rgba(244, 114, 182, 0.5);
+      box-shadow: 0 0 18px rgba(244, 114, 182, 0.45);
       color: #f8fafc;
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -95,7 +94,7 @@
       left: 50%;
       transform: translateX(-50%);
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #f9c9db;
     }
   </style>
 </head>
@@ -103,7 +102,7 @@
   <canvas id="bg"></canvas>
 
   <section>
-    <h1>Hi, I'm <span>Jesu Ronith</span></h1>
+    <h1>Hi, I'm <span>Your Name</span></h1>
     <p>CSE student building websites, games and AI projects. Move your mouse and scroll to explore.</p>
     <a class="btn" href="#projects">See my work</a>
   </section>
@@ -148,6 +147,36 @@
   <script type="module">
     import * as THREE from "three";
 
+    function createHeartGeometry() {
+      // Build a 2D heart using bezier curves and extrude it into 3D.
+      const heartShape = new THREE.Shape();
+      heartShape.moveTo(0, 4);
+      heartShape.bezierCurveTo(0, 8, -4, 10, -7, 10);
+      heartShape.bezierCurveTo(-11, 10, -13, 4, -13, -1);
+      heartShape.bezierCurveTo(-13, -8, -7, -12, 0, -17);
+      heartShape.bezierCurveTo(7, -12, 13, -8, 13, -1);
+      heartShape.bezierCurveTo(13, 4, 11, 10, 7, 10);
+      heartShape.bezierCurveTo(4, 10, 0, 8, 0, 4);
+
+      const heartGeometry = new THREE.ExtrudeGeometry(heartShape, {
+        depth: 4,
+        bevelEnabled: true,
+        bevelSegments: 10,
+        steps: 1,
+        bevelSize: 0.8,
+        bevelThickness: 0.9,
+        curveSegments: 24
+      });
+
+      // Center the heart and flip it to point down correctly in the scene.
+      heartGeometry.center();
+      heartGeometry.scale(1, -1, 1);
+
+      return heartGeometry;
+    }
+
+    const heartGeometry = createHeartGeometry();
+
     // Scene, camera, renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -161,28 +190,32 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Change 1: swap the torus knot for a glowing wireframe sphere that gently pulses.
-    const mainSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(8, 32, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0xa78bfa,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.9
+    // Main pink heart with glossy material and gentle pulse
+    const mainHeart = new THREE.Mesh(
+      heartGeometry,
+      new THREE.MeshPhysicalMaterial({
+        color: 0xff4d8d,
+        metalness: 0.3,
+        roughness: 0.2,
+        emissive: 0xff1f6d,
+        emissiveIntensity: 0.25,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.2
       })
     );
-    mainSphere.position.x = 12;
-    scene.add(mainSphere);
+    mainHeart.position.x = 12;
+    mainHeart.scale.setScalar(1.9);
+    scene.add(mainHeart);
 
     // Lights
-    const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.45);
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
     keyLight.position.set(10, 20, 15);
-    const pinkLight = new THREE.DirectionalLight(0xec4899, 1.5);
+    const pinkLight = new THREE.DirectionalLight(0xff2d78, 1.5);
     pinkLight.position.set(-20, -10, 5);
     scene.add(ambient, keyLight, pinkLight);
 
-    // Stars: 1500 tiny points placed randomly
+    // Stars: soft pink-white points
     const starCount = 1500;
     const positions = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount * 3; i++) {
@@ -192,37 +225,49 @@
     starGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     const stars = new THREE.Points(
       starGeometry,
-      new THREE.PointsMaterial({ color: 0xffffff, size: 0.35 })
+      new THREE.PointsMaterial({ color: 0xffe3f0, size: 0.35 })
     );
     scene.add(stars);
 
-    // Floating cubes made with a loop
-    const cubes = [];
-    const cubeColors = [0x22d3ee, 0xf472b6, 0xfacc15, 0x34d399, 0xa78bfa, 0xf87171];
+    // Floating mini hearts in pink/rose/white tones
+    const miniHeartColors = [0xff80ab, 0xf48fb1, 0xff1493, 0xffffff];
+    const miniHearts = [];
     for (let i = 0; i < 12; i++) {
-      const cube = new THREE.Mesh(
-        new THREE.BoxGeometry(1.5, 1.5, 1.5),
-        new THREE.MeshStandardMaterial({ color: cubeColors[i % cubeColors.length] })
+      const miniHeart = new THREE.Mesh(
+        heartGeometry,
+        new THREE.MeshStandardMaterial({
+          color: miniHeartColors[i % miniHeartColors.length],
+          emissive: 0xff6a9d,
+          emissiveIntensity: 0.18,
+          roughness: 0.45,
+          metalness: 0.15
+        })
       );
-      cube.position.set(
+      miniHeart.scale.setScalar(Math.random() * 0.35 + 0.18);
+      miniHeart.position.set(
         (Math.random() - 0.5) * 60,
         (Math.random() - 0.5) * 40,
         (Math.random() - 0.5) * 30 - 10
       );
-      scene.add(cube);
-      cubes.push(cube);
+      miniHeart.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+      );
+      scene.add(miniHeart);
+      miniHearts.push(miniHeart);
     }
 
-    // Change 2: clicking anywhere cycles the cubes to a new colour palette.
-    let activeCubeColor = 0;
+    // Clicking changes the mini hearts to a new pink palette
+    let activeMiniHeartColor = 0;
     document.addEventListener("click", () => {
-      activeCubeColor = (activeCubeColor + 1) % cubeColors.length;
-      cubes.forEach((cube) => {
-        cube.material.color.setHex(cubeColors[activeCubeColor]);
+      activeMiniHeartColor = (activeMiniHeartColor + 1) % miniHeartColors.length;
+      miniHearts.forEach((miniHeart) => {
+        miniHeart.material.color.setHex(miniHeartColors[activeMiniHeartColor]);
       });
     });
 
-    // Mouse movement tilts the knot
+    // Mouse movement tilts the heart
     const mouse = { x: 0, y: 0 };
     window.addEventListener("mousemove", (event) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -240,15 +285,15 @@
     function animate() {
       const time = clock.getElapsedTime();
 
-      const pulseScale = 1 + Math.sin(time * 1.8) * 0.18;
-      mainSphere.scale.setScalar(pulseScale);
-      mainSphere.rotation.x = time * 0.3 + mouse.y * 0.5;
-      mainSphere.rotation.y = time * 0.4 + mouse.x * 0.5;
+      const pulseScale = 1 + Math.sin(time * 4) * 0.06;
+      mainHeart.scale.setScalar(1.9 * pulseScale);
+      mainHeart.rotation.x = time * 0.3 + mouse.y * 0.5;
+      mainHeart.rotation.y = time * 0.4 + mouse.x * 0.5;
 
-      cubes.forEach((cube, i) => {
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.015;
-        cube.position.y += Math.sin(time + i) * 0.01;
+      miniHearts.forEach((miniHeart, i) => {
+        miniHeart.rotation.x += 0.012;
+        miniHeart.rotation.y += 0.016;
+        miniHeart.position.y += Math.sin(time + i) * 0.01;
       });
 
       stars.rotation.y = time * 0.02;
